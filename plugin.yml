@@ -1,0 +1,67 @@
+---
+name: "PyPI"
+description: "A Buildkite Plugin for uploading artifacts to PyPI"
+author: "https://github.com/grapl-security"
+requirements: ["docker"]
+configuration:
+  properties:
+    always-pull:
+      description: |
+        Always pull the configured `twine` container image. Useful if
+        using the `latest` tag.
+
+        Defaults to `false`.
+      type: boolean
+    check:
+      description: |
+        Whether or not to run `twine check` before uploading
+        packages. A failed check will fail the job, and will not
+        upload a package to the repository.
+
+        Defaults to `true`.
+      type: boolean
+    file:
+      description: |
+        The file(s) to upload. Can be a glob.
+      type: string
+    image:
+      description: |
+        The `twine` image to use; must have `twine` as its entrypoint.
+
+        Defaults to `docker.cloudsmith.io/grapl/releases/twine`.
+      type: string
+    tag:
+      description: |
+        The `twine` image tag to use; defaults to `latest`.
+      type: string
+    repository-url:
+      description: |
+        The URL of the repository to upload files to.
+
+        Corresponds to the `--repository-url` option /
+        `TWINE_REPOSITORY_URL` environment variable.
+
+        If unset, defaults to uploading to PyPI.
+      type: string
+    username:
+      description: |
+        The username to upload packages as.
+
+        Corresponds to the `--username` option / `TWINE_USERNAME`
+        environment variable.
+
+        Defaults to `__token__`.
+      type: string
+    password-envvar:
+      description: |
+        The *name* of an environment variable that contains the
+        password or token for uploading packages.
+
+        Do *NOT* pass the credentials directly.
+
+        The value of the variable will ultimately be set as the
+        `TWINE_PASSWORD` environment variable.
+
+        Defaults to `PYPI_API_TOKEN`
+      type: string
+  additionalProperties: false

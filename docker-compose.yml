@@ -1,0 +1,43 @@
+version: "3.8"
+
+x-common-variables:
+  read-only-workdir: &read-only-workdir
+    type: bind
+    source: .
+    target: /workdir
+    read_only: true
+  read-write-workdir: &read-write-workdir
+    type: bind
+    source: .
+    target: /workdir
+    read_only: false
+  read-only-plugin: &read-only-plugin
+    # Buildkite containers assume you mount into /plugin
+    type: bind
+    source: .
+    target: /plugin
+    read_only: true
+
+services:
+  plugin-linter:
+    image: buildkite/plugin-linter:latest # the only available tag
+    command: ["--id", "grapl-security/pypi"]
+    volumes:
+      - *read-only-plugin
+
+  plugin-tester:
+    image: buildkite/plugin-tester:latest # the only available tag
+    volumes:
+      - *read-only-plugin
+
+  hcl-linter:
+    image: docker.cloudsmith.io/grapl/releases/hcl-formatter:1.7.4
+    command: lint
+    volumes:
+      - *read-only-workdir
+
+  hcl-formatter:
+    image: docker.cloudsmith.io/grapl/releases/hcl-formatter:1.7.4
+    command: format
+    volumes:
+      - *read-write-workdir

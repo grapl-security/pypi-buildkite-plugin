@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+
+# Run `twine` to upload a Python package to PyPI, or another
+# compatible repository.
+#
+# Uses a container image with `twine` as the entrypoint to provide
+# isolation and ease of adoption and use.
+#
+# Credentials are intentionally passed via environment variables.
+#
+# See the following for more:
+# - https://twine.readthedocs.io/en/stable/
+# - https://pypi.org/project/twine/
+
+set -euo pipefail
+
+# shellcheck source-path=SCRIPTDIR
+source "$(dirname "${BASH_SOURCE[0]}")/../lib/twine.sh"
+# shellcheck source-path=SCRIPTDIR
+source "$(dirname "${BASH_SOURCE[0]}")/../lib/log.sh"
+
+twine_upload_args=(--verbose --non-interactive)
+
+# Resolve image
+########################################################################
+readonly default_image="docker.cloudsmith.io/grapl/releases/twine"
+readonly default_tag="latest"
+readonly image="${BUILDKITE_PLUGIN_PYPI_IMAGE:-${default_image}}:${BUILDKITE_PLUGIN_PYPI_TAG:-${default_tag}}"
+readonly default_always_pull="false"
+
+# Resolve username
+########################################################################
+# TODO: Add link to docs for this __token__ stuff
+readonly default_username="__token__"
+readonly username="${BUILDKITE_PLUGIN_PYPI_USERNAME:-${default_username}}"
+twine_upload_args+=("--username=${username}")
+
+# Resolve password
+########################################################################
+# TODO: Is there a more customary name for this environment variable?
+readonly default_password_envvar="PYPI_API_TOKEN"
+readonly password_envvar="${BUILDKITE_PLUGIN_PYPI_PASSWORD_ENVVAR:-${default_password_envvar}}"
+# NEVER pass the password as an explicit argument! We don't want it
+# showing up in logs, etc.
+if [[ ! -v "${password_envvar}" ]]; then
+    raise_error "The variable '${password_envvar}' is not set!"
+fi
+export TWINE_PASSWORD="${!password_envvar}"
+
+# Resolve repository URL
+########################################################################
+if [[ -v BUILDKITE_PLUGIN_PYPI_REPOSITORY_URL ]]; then
+    twine_upload_args+=("--repository-url=${BUILDKITE_PLUGIN_PYPI_REPOSITORY_URL}")
+fi
+
+# Resolve file
+########################################################################
+readonly file="${BUILDKITE_PLUGIN_PYPI_FILE}"
+# NOTE: This is the first argument (as opposed to an option flag); no
+# other option flags should come after this)
+twine_upload_args+=("${BUILDKITE_PLUGIN_PYPI_FILE}")
+
+########################################################################
+# PRELIMINARIES ARE DONE!
+########################################################################
+
+# Pull image if required
+########################################################################
+if [[ "${BUILDKITE_PLUGIN_PYPI_ALWAYS_PULL:-${default_always_pull}}" =~ ^(true|on|1)$ ]]; then
+    log "--- :docker: Explicitly pulling '${image}' image"
+    log_and_run docker pull "${image}"
+fi
+
+# Check the distribution before upload
+########################################################################
+readonly default_check="true"
+if [[ "${BUILDKITE_PLUGIN_PYPI_CHECK:-${default_check}}" =~ ^(true|on|1)$ ]]; then
+    log "--- :white_check_mark::python: Checking distribution files"
+    log_and_run twine check --strict "${file}"
+fi
+
+# Perform the upload
+########################################################################
+log "--- :python: Uploading distribution files"
+log_and_run twine upload "${twine_upload_args[@]}"
