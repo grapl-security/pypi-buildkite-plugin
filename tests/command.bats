@@ -13,7 +13,8 @@ setup() {
 
     export PYPI_API_TOKEN="sooperseekrit"
 
-    export docker_run_cmd="run --init --interactive --tty --rm --label=\"com.buildkite.job-id=${BUILDKITE_JOB_ID}\" --mount=type=bind,source=\"$(pwd)\",destination=/workdir,readonly --workdir=/workdir --env=TWINE_PASSWORD --"
+    container_user="$(id -u):$(id -g)"
+    export docker_run_cmd="run --init --interactive --tty --rm --user=${container_user} --label=\"com.buildkite.job-id=${BUILDKITE_JOB_ID}\" --mount=type=bind,source=\"$(pwd)\",destination=/workdir,readonly --workdir=/workdir --env=TWINE_PASSWORD --"
 }
 
 teardown() {

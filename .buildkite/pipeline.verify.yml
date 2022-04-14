@@ -39,6 +39,27 @@ steps:
     command:
       - make test-plugin
 
+  - label: ":buildkite: Plugin Integration Test"
+    key: integration-test
+    plugins:
+      - improbable-eng/metahook#v0.4.1:
+          pre-command: |
+            make --directory=integration build-pkg start-pypiserver
+          # NOTE: post-command runs directly on the agent, not in a container
+          post-command: |
+            pip3 search --index=http://localhost:8080 testpkg
+          pre-exit: |
+            make --directory=integration shutdown-pypiserver
+      - "grapl-security/pypi#${BUILDKITE_COMMIT}":
+          file: integration/dist/*
+          repository-url: http://host.docker.internal:8080
+          username: PyPIUser
+          password-envvar: TEST_USER_PASSWORD
+          # TODO: use the image from *this commit*
+    env:
+      # See integration/auth/README.md
+      TEST_USER_PASSWORD: sooperseekrit
+
   - label: ":docker: Build Image"
     command:
       - make image
