@@ -1,0 +1,17 @@
+---
+services:
+  pypiserver:
+    image: pypiserver/pypiserver:v1.4.2
+    volumes:
+      - type: bind
+        source: ./auth
+        target: /data/auth
+        read_only: true
+    # Note: We're using `/tmp` rather than the volume-backed
+    # `data/packages` just so we don't have to worry about packages
+    # from previous invocations persisting.
+    #
+    # Make sure to run `docker compose` with `--force-recreate`!
+    command: --passwords /data/auth/.htpasswd --authenticate update /tmp
+    ports:
+      - "8080:8080"

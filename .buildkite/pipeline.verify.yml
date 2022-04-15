@@ -1,0 +1,65 @@
+---
+env:
+  PANTS_CONFIG_FILES: "['pants.toml', 'pants.ci.toml']"
+  BUILDKITE_PLUGIN_VAULT_ENV_SECRET_PREFIX: "secret/data/buildkite/env"
+
+steps:
+  - label: ":jeans: All files are covered by Pants"
+    command:
+      - ./pants tailor --check
+
+  - group: ":lint-roller: Lints"
+    steps:
+      - label: ":docker: Lint Dockerfile"
+        command:
+          - make lint-docker
+
+      - label: ":jeans: Lint BUILD files"
+        command:
+          - make lint-build-files
+
+      - label: "Lint HCL"
+        command:
+          - make lint-hcl
+
+      - label: ":buildkite: Lint Plugin"
+        command:
+          - make lint-plugin
+
+      - label: ":bash: Lint Shell"
+        command:
+          - make lint-shell
+        plugins:
+          - grapl-security/vault-login#v0.1.2
+          - grapl-security/vault-env#v0.1.0:
+              secrets:
+                - pypi-buildkite-plugin/TOOLCHAIN_AUTH_TOKEN
+
+  - label: ":buildkite: Test Plugin"
+    command:
+      - make test-plugin
+
+  - label: ":buildkite: Plugin Integration Test"
+    key: integration-test
+    plugins:
+      - improbable-eng/metahook#v0.4.1:
+          pre-command: |
+            make --directory=integration build-pkg start-pypiserver
+          # NOTE: post-command runs directly on the agent, not in a container
+          post-command: |
+            pip3 search --index=http://localhost:8080 testpkg
+          pre-exit: |
+            make --directory=integration shutdown-pypiserver
+      - "grapl-security/pypi#${BUILDKITE_COMMIT}":
+          file: integration/dist/*
+          repository-url: http://host.docker.internal:8080
+          username: PyPIUser
+          password-envvar: TEST_USER_PASSWORD
+          # TODO: use the image from *this commit*
+    env:
+      # See integration/auth/README.md
+      TEST_USER_PASSWORD: sooperseekrit
+
+  - label: ":docker: Build Image"
+    command:
+      - make image

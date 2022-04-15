@@ -1,0 +1,44 @@
+[GLOBAL]
+pants_version = "2.10.0"
+backend_packages = [
+    "pants.backend.docker",
+    "pants.backend.docker.lint.hadolint",
+    "pants.backend.shell",
+    "pants.backend.shell.lint.shellcheck",
+    "pants.backend.shell.lint.shfmt"
+]
+
+pants_ignore = [
+    "!.buildkite/"
+]
+
+plugins = [
+  "toolchain.pants.plugin==0.17.0"
+]
+
+remote_cache_read = true
+remote_cache_write = true
+remote_store_address = "grpcs://cache.toolchain.com:443"
+remote_auth_plugin = "toolchain.pants.auth.plugin:toolchain_auth_plugin"
+
+[toolchain-setup]
+org = "grapl-security"
+repo = "pypi-buildkite-plugin"
+
+[buildsense]
+enable = true
+
+# See https://www.pantsbuild.org/docs/anonymous-telemetry
+[anonymous-telemetry]
+enabled = true
+# Randomly generated, and unique to this project
+repo_id = "b1632dc0-307e-44ff-8b8c-113ca07de1f9"
+
+[shfmt]
+# Indent with 4 spaces
+# Indent switch cases
+# Redirect operators are followed by a space
+args = ["-i 4", "-ci", "-sr"]
+
+[test]
+output = "all"
