@@ -1,5 +1,5 @@
 variable "TWINE_VERSION" {
-  default = "4.0.0"
+  default = "4.0.1"
 }
 
 group "default" {
