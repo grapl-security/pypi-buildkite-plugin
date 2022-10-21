@@ -1,7 +1,7 @@
 ---
 services:
   pypiserver:
-    image: pypiserver/pypiserver:v1.5.0
+    image: pypiserver/pypiserver:v1.5.1
     volumes:
       - type: bind
         source: ./auth
