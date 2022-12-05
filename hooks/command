@@ -23,9 +23,11 @@ twine_upload_args=(--verbose --non-interactive)
 
 # Resolve image
 ########################################################################
-readonly default_image="docker.cloudsmith.io/grapl/releases/twine"
+if [[ -z "${BUILDKITE_PLUGIN_PYPI_IMAGE+x}" ]]; then
+    raise_error "An image has not been set! Please specify a container image that has 'twine' as the entrypoint."
+fi
 readonly default_tag="latest"
-readonly image="${BUILDKITE_PLUGIN_PYPI_IMAGE:-${default_image}}:${BUILDKITE_PLUGIN_PYPI_TAG:-${default_tag}}"
+readonly image="${BUILDKITE_PLUGIN_PYPI_IMAGE}:${BUILDKITE_PLUGIN_PYPI_TAG:-${default_tag}}"
 readonly default_always_pull="false"
 
 # Resolve username
