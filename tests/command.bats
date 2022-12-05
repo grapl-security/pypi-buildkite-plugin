@@ -7,8 +7,7 @@ load "$BATS_PLUGIN_PATH/load.bash"
 
 setup() {
     export BUILDKITE_JOB_ID="1-2-3-4"
-
-    export DEFAULT_IMAGE="docker.cloudsmith.io/grapl/releases/twine"
+    export BUILDKITE_PLUGIN_PYPI_IMAGE="docker.mycompany.com/twine"
     export DEFAULT_TAG="latest"
 
     export PYPI_API_TOKEN="sooperseekrit"
@@ -37,8 +36,8 @@ teardown() {
     export BUILDKITE_PLUGIN_PYPI_FILE="dist/*"
 
     stub docker \
-         "${docker_run_cmd} ${DEFAULT_IMAGE}:${DEFAULT_TAG} check --strict dist/* : echo 'STUB - checking files'" \
-         "${docker_run_cmd} ${DEFAULT_IMAGE}:${DEFAULT_TAG} upload --verbose --non-interactive --username=__token__ dist/* : echo 'STUB - uploading to PyPI'"
+         "${docker_run_cmd} ${BUILDKITE_PLUGIN_PYPI_IMAGE}:${DEFAULT_TAG} check --strict dist/* : echo 'STUB - checking files'" \
+         "${docker_run_cmd} ${BUILDKITE_PLUGIN_PYPI_IMAGE}:${DEFAULT_TAG} upload --verbose --non-interactive --username=__token__ dist/* : echo 'STUB - uploading to PyPI'"
 
     run "${PWD}/hooks/command"
 
@@ -53,7 +52,7 @@ teardown() {
     export BUILDKITE_PLUGIN_PYPI_FILE="dist/*"
 
     stub docker \
-         "${docker_run_cmd} ${DEFAULT_IMAGE}:${DEFAULT_TAG} check --strict dist/* : echo 'STUB - checking FAILED'; exit 1" \
+         "${docker_run_cmd} ${BUILDKITE_PLUGIN_PYPI_IMAGE}:${DEFAULT_TAG} check --strict dist/* : echo 'STUB - checking FAILED'; exit 1" \
 
     run "${PWD}/hooks/command"
 
@@ -69,7 +68,7 @@ teardown() {
     export BUILDKITE_PLUGIN_PYPI_CHECK="false"
 
     stub docker \
-         "${docker_run_cmd} ${DEFAULT_IMAGE}:${DEFAULT_TAG} upload --verbose --non-interactive --username=__token__ dist/* : echo 'STUB - uploading to PyPI'"
+         "${docker_run_cmd} ${BUILDKITE_PLUGIN_PYPI_IMAGE}:${DEFAULT_TAG} upload --verbose --non-interactive --username=__token__ dist/* : echo 'STUB - uploading to PyPI'"
 
     run "${PWD}/hooks/command"
 
@@ -85,8 +84,8 @@ teardown() {
     export BUILDKITE_PLUGIN_PYPI_USERNAME="boaty_mcboatface"
 
     stub docker \
-         "${docker_run_cmd} ${DEFAULT_IMAGE}:${DEFAULT_TAG} check --strict dist/* : echo 'STUB - checking files'" \
-         "${docker_run_cmd} ${DEFAULT_IMAGE}:${DEFAULT_TAG} upload --verbose --non-interactive --username=boaty_mcboatface dist/* : echo 'STUB - uploading to PyPI'"
+         "${docker_run_cmd} ${BUILDKITE_PLUGIN_PYPI_IMAGE}:${DEFAULT_TAG} check --strict dist/* : echo 'STUB - checking files'" \
+         "${docker_run_cmd} ${BUILDKITE_PLUGIN_PYPI_IMAGE}:${DEFAULT_TAG} upload --verbose --non-interactive --username=boaty_mcboatface dist/* : echo 'STUB - uploading to PyPI'"
 
     run "${PWD}/hooks/command"
 
@@ -103,8 +102,8 @@ teardown() {
     export BUILDKITE_PLUGIN_PYPI_REPOSITORY_URL="https://test.pypi.org"
 
     stub docker \
-         "${docker_run_cmd} ${DEFAULT_IMAGE}:${DEFAULT_TAG} check --strict dist/* : echo 'STUB - checking files'" \
-         "${docker_run_cmd} ${DEFAULT_IMAGE}:${DEFAULT_TAG} upload --verbose --non-interactive --username=__token__ --repository-url=https://test.pypi.org dist/* : echo 'STUB - uploading to Test PyPI'"
+         "${docker_run_cmd} ${BUILDKITE_PLUGIN_PYPI_IMAGE}:${DEFAULT_TAG} check --strict dist/* : echo 'STUB - checking files'" \
+         "${docker_run_cmd} ${BUILDKITE_PLUGIN_PYPI_IMAGE}:${DEFAULT_TAG} upload --verbose --non-interactive --username=__token__ --repository-url=https://test.pypi.org dist/* : echo 'STUB - uploading to Test PyPI'"
 
     run "${PWD}/hooks/command"
 
@@ -132,8 +131,8 @@ teardown() {
     export MY_PASSWORD="sooperseekritpassworddonttell"
 
     stub docker \
-         "${docker_run_cmd} ${DEFAULT_IMAGE}:${DEFAULT_TAG} check --strict dist/* : echo 'STUB - checking files'" \
-         "${docker_run_cmd} ${DEFAULT_IMAGE}:${DEFAULT_TAG} upload --verbose --non-interactive --username=__token__ dist/* : echo 'STUB - uploading to PyPI'"
+         "${docker_run_cmd} ${BUILDKITE_PLUGIN_PYPI_IMAGE}:${DEFAULT_TAG} check --strict dist/* : echo 'STUB - checking files'" \
+         "${docker_run_cmd} ${BUILDKITE_PLUGIN_PYPI_IMAGE}:${DEFAULT_TAG} upload --verbose --non-interactive --username=__token__ dist/* : echo 'STUB - uploading to PyPI'"
 
     run "${PWD}/hooks/command"
 
@@ -168,8 +167,8 @@ teardown() {
     export BUILDKITE_PLUGIN_PYPI_TAG="6.6.6"
 
     stub docker \
-         "${docker_run_cmd} ${DEFAULT_IMAGE}:6.6.6 check --strict dist/* : echo 'STUB - checking files'" \
-         "${docker_run_cmd} ${DEFAULT_IMAGE}:6.6.6 upload --verbose --non-interactive --username=__token__ dist/* : echo 'STUB - uploading to PyPI'"
+         "${docker_run_cmd} ${BUILDKITE_PLUGIN_PYPI_IMAGE}:6.6.6 check --strict dist/* : echo 'STUB - checking files'" \
+         "${docker_run_cmd} ${BUILDKITE_PLUGIN_PYPI_IMAGE}:6.6.6 upload --verbose --non-interactive --username=__token__ dist/* : echo 'STUB - uploading to PyPI'"
 
     run "${PWD}/hooks/command"
 
@@ -186,9 +185,9 @@ teardown() {
     export BUILDKITE_PLUGIN_PYPI_ALWAYS_PULL="true"
 
     stub docker \
-         "pull ${DEFAULT_IMAGE}:${DEFAULT_TAG} : echo 'STUB - pull image'" \
-         "${docker_run_cmd} ${DEFAULT_IMAGE}:${DEFAULT_TAG} check --strict dist/* : echo 'STUB - checking files'" \
-         "${docker_run_cmd} ${DEFAULT_IMAGE}:${DEFAULT_TAG} upload --verbose --non-interactive --username=__token__ dist/* : echo 'STUB - uploading to PyPI'"
+         "pull ${BUILDKITE_PLUGIN_PYPI_IMAGE}:${DEFAULT_TAG} : echo 'STUB - pull image'" \
+         "${docker_run_cmd} ${BUILDKITE_PLUGIN_PYPI_IMAGE}:${DEFAULT_TAG} check --strict dist/* : echo 'STUB - checking files'" \
+         "${docker_run_cmd} ${BUILDKITE_PLUGIN_PYPI_IMAGE}:${DEFAULT_TAG} upload --verbose --non-interactive --username=__token__ dist/* : echo 'STUB - uploading to PyPI'"
 
     run "${PWD}/hooks/command"
 

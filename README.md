@@ -1,15 +1,21 @@
 # PyPI Buildkite Plugin
 
-[![Build status](https://badge.buildkite.com/6d1258fb72475770240aa39c0a26c041c6f5915df387dc19d5.svg)](https://buildkite.com/grapl/pypi-buildkite-plugin-verify?branch=main)
+:warning: **Sunsetting This Repository** :warning:
+
+Work has stopped on this plugin. The repository will still be
+available in an archived state, but users are encouraged to either
+fork a copy or find alternatives. The `twine` container image we
+provided will no longer be available, but you can use an alternative
+or build your own from this repository (the `ENTRYPOINT` _must_ be
+`twine`). If you continue using the code from this repository, you
+will need to specify an `image` in your plugin configuration (see
+below).
 
 Uploads Python packages to [PyPI](https://pypi.org) or other
 compatible repositories using
 [twine](https://twine.readthedocs.io/en/stable/). Because it uses a
 container image, you do not need to have `twine` (or even Python
 itself!) installed on your build agents to use this plugin.
-
-External contributions are always welcome; see [Building and
-Contributing](#building-and-contributing) below.
 
 ## Examples
 
@@ -42,6 +48,7 @@ steps:
             download: "dist/*"
         - grapl-security/pypi#v0.1.0:
             file: "dist/*"
+            image: "docker.mycompany.com/twine"
       env:
         - PYPI_API_TOKEN
 ```
@@ -56,6 +63,7 @@ steps:
       plugins:
         - grapl-security/pypi#v0.1.0:
             file: "dist/*"
+            image: "docker.mycompany.com/twine"
             repository-url: "https://python.cloudsmith/my-organization/my-repo"
             username: "my-cloudsmith-username"
             password-envvar: "CLOUDSMITH_API_TOKEN"
@@ -72,27 +80,11 @@ steps:
       plugins:
         - grapl-security/pypi#v0.1.0:
             file: "dist/*"
+            image: "docker.mycompany.com/twine"
             check: false
       env:
         - PYPI_API_TOKEN
 ```
-
-You can override the container image that `twine` is run from, if you
-wish:
-
-```yml
-steps:
-    - label: ":python: Upload to PyPI"
-      plugins:
-        - grapl-security/pypi#v0.1.0:
-            file: "dist/*"
-            image: "docker.mycompany.com/twine"
-            tag: "v1.2.3"
-      env:
-        - PYPI_API_TOKEN
-```
-
-The entrypoint of the image must be `twine`.
 
 If using the `latest` tag of the image, it can be useful to explicitly
 pull the image before running. Since the `latest` tag will change over
@@ -174,12 +166,10 @@ Defaults to `true`.
 
 ### Container Image Configuration
 
-#### `image` (optional, string)
+#### `image` (required, string)
 
 The container image with the `twine` binary that the plugin uses. Any
 container used should have `twine` as its entrypoint.
-
-Defaults to `docker.cloudsmith.io/grapl/releases/twine`.
 
 #### `tag` (optional, string)
 
